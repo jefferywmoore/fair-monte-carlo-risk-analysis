@@ -3,7 +3,6 @@
 ## ✅ Fixed Issues
 - ✅ UTF-8 encoding added (fixes euro symbol errors)
 - ✅ requirements.txt included
-- ✅ updated requirements.txt to include web dashboard dependencies
 
 ## 📦 Installation
 
