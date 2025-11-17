@@ -31,7 +31,7 @@ Try run it in a virtual environment:
 python3 -m venv venv
 source venv/bin/activate  # Mac/Linux
 # or
-```bash
+
 venv\Scripts\activate     # Windows
 ```
 
