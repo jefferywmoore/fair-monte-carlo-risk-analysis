@@ -32,6 +32,8 @@ source venv/bin/activate  # Mac/Linux
 # or
 
 venv\Scripts\activate     # Windows
+
+pip3 install -r requirements.txt
 ```
 Repeat Step 1 and 2
 
