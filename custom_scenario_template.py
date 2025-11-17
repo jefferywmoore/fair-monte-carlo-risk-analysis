@@ -198,18 +198,26 @@ def run_custom_scenario():
     safe_scenario_name = RISK_SCENARIO_NAME.replace(" ", "_").lower()
     
     filename_base = f"{safe_client_name}_{safe_scenario_name}"
-    
-    sim.plot_results(
-        stats, 
-        currency="€", 
-        save_path=f"{filename_base}_analysis.png"
-    )
-    
-    sim.export_results(
-        stats, 
-        f"{CLIENT_NAME} - {RISK_SCENARIO_NAME}",
-        f"{filename_base}_results.csv"
-    )
+
+    try:
+        sim.plot_results(
+            stats,
+            currency="€",
+            save_path=f"{filename_base}_analysis.png"
+        )
+        print(f"✅ Plot saved: {filename_base}_analysis.png\n")
+    except Exception as e:
+        print(f"⚠️ Could not save plot: {e}\n")
+
+    try:
+        sim.export_results(
+            stats,
+            f"{CLIENT_NAME} - {RISK_SCENARIO_NAME}",
+            f"{filename_base}_results.csv"
+        )
+        print(f"✅ Results exported\n")
+    except Exception as e:
+        print(f"⚠️ Could not export results: {e}\n")
     
     # =================================================================
     # RECOMMENDATIONS TEMPLATE
