@@ -30,7 +30,6 @@ pip3 install streamlit plotly
 ### Step 3: Launch the Dashboard
 
 ```bash
-python3 fair_monte_carlo.py
 streamlit run fair_dashboard.py
 ```
 
