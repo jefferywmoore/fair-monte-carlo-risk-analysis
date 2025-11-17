@@ -10,24 +10,15 @@ A beautiful, **web-based interactive dashboard** that runs in your browser! Perf
 
 ## 🚀 Installation
 
-### Step 1: Start up venv
-
-```bash
-python3 -m venv venv
-source venv/bin/activate  # Mac/Linux
-# or
-venv\Scripts\activate     # Windows
-```
-
-### Step 2: Install Packages
+### Step 1: Install Extra Packages
 
 You need to install Streamlit and Plotly (on top of the packages you already have):
 
 ```bash
-pip3 install streamlit plotly
+pip3 install streamlit plotly matplotlib
 ```
 
-### Step 3: Launch the Dashboard
+### Step 2: Launch the Dashboard
 
 ```bash
 streamlit run fair_dashboard.py
