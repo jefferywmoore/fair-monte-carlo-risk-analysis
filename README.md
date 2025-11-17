@@ -19,21 +19,20 @@ python3 --version
 pip3 install -r requirements.txt
 ```
 
-Or if that doesn't work:
-Try creating a virtual environment:
-```bash
-python3 -m venv venv
-source venv/bin/activate  # Mac/Linux
-
-# or
-```bash
-venv\Scripts\activate     # Windows
-
 ### 3. Run the example
 
 ```bash
 python3 fair_monte_carlo.py
 ```
+
+Or if that doesn't work:
+Try run it in a virtual environment:
+```bash
+python3 -m venv venv
+source venv/bin/activate  # Mac/Linux
+# or
+```bash
+venv\Scripts\activate     # Windows
 
 That's it! You should see results printed and files generated.
 
