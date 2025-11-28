@@ -12,9 +12,10 @@ A professional, web-based tool for conducting quantitative cybersecurity risk as
 
 - 🎯 **Interactive Monte Carlo Simulation** - Run 1,000 to 50,000 simulations for statistical rigor
 - 🌍 **External vs Internal Factor Grouping** - Clear visual distinction between controllable and uncontrollable risk factors
+- 🎚️ **Configurable Risk Tolerance** - Set custom thresholds (Conservative/Moderate/Aggressive/Custom) aligned with your risk appetite
 - 💡 **Comprehensive Help System** - 35+ in-context tooltips with FAIR-aligned definitions
 - 📊 **Rich Visualizations** - Interactive charts with distribution, exceedance curves, percentiles, and LEF analysis
-- 🎨 **Preset Scenarios** - Pre-configured risk scenarios for common threats (Ransomware, Data Breach, BEC, DDoS, Insider Threat)
+- 🎨 **Preset Scenarios** - 9 pre-configured risk scenarios for common threats (Ransomware, Data Breach, BEC, DDoS, Insider Threat, Zero-Day, Device Theft, System Outage, Supply Chain)
 - 💰 **ROI Calculators** - Built-in ROSI analysis and insurance recommendation tools
 - 📥 **Multiple Export Formats** - JSON, CSV, and formatted text reports
 - 🎓 **Educational Design** - UI teaches FAIR principles through its structure
@@ -121,7 +122,14 @@ Where:
 
 ## 📈 Version History
 
-### Version 1.2 (Current) - UI Reorganization
+### Version 1.3 (Current) - Risk Tolerance Configuration
+- 🎚️ Configurable risk tolerance thresholds
+- 📊 Four preset profiles (Conservative/Moderate/Aggressive/Custom)
+- 📈 Visual threshold indicators on charts
+- 🎯 Industry-aligned risk assessment
+- 📋 Four new threat scenarios (Zero-Day, Device Theft, System Outage, Supply Chain)
+
+### Version 1.2 - UI Reorganization
 - ✨ Visual grouping of external vs internal factors
 - 🎨 Bordered containers for clear section separation
 - 📚 Enhanced help text with controllability indicators

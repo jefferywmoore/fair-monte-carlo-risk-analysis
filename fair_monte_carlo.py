@@ -13,8 +13,13 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from scipy import stats
 from dataclasses import dataclass
-from typing import Dict, List, Tuple
+from typing import Dict
 import json
+
+# Configuration constants
+PERT_LAMBDA_PARAMETER = 4  # Shape parameter for PERT distribution
+LOGNORMAL_SIGMA_DIVISOR = 4  # Divisor for lognormal sigma estimation
+MIN_POSITIVE_VALUE = 1e-10  # Minimum value to prevent log(0) errors
 
 
 @dataclass
@@ -30,42 +35,63 @@ class FAIRDistribution:
     def sample(self, size: int) -> np.ndarray:
         """Generate random samples from the distribution"""
         if self.dist_type == 'pert':
+            # Validate PERT parameters
+            if not (self.min_val <= self.mode_val <= self.max_val):
+                raise ValueError(f"PERT distribution requires min_val <= mode_val <= max_val, got min={self.min_val}, mode={self.mode_val}, max={self.max_val}")
+
             # PERT distribution (Beta PERT)
-            # Lambda parameter controls the shape (typically 4)
-            lambda_param = 4
+            lambda_param = PERT_LAMBDA_PARAMETER
             mu = (self.min_val + lambda_param * self.mode_val + self.max_val) / (lambda_param + 2)
-            
+
             if self.max_val == self.min_val:
                 return np.full(size, self.min_val)
-            
+
             # Shape parameters for Beta distribution
             alpha = 1 + lambda_param * (self.mode_val - self.min_val) / (self.max_val - self.min_val)
             beta = 1 + lambda_param * (self.max_val - self.mode_val) / (self.max_val - self.min_val)
-            
+
             # Generate Beta distribution samples and scale to range
             beta_samples = np.random.beta(alpha, beta, size)
             return self.min_val + beta_samples * (self.max_val - self.min_val)
-            
+
         elif self.dist_type == 'lognormal':
             # Lognormal distribution (good for loss magnitudes)
             if self.mean is not None and self.std is not None:
+                # Validate mean and std are positive
+                if self.mean <= 0:
+                    raise ValueError(f"Lognormal distribution requires positive mean, got {self.mean}")
+                if self.std <= 0:
+                    raise ValueError(f"Lognormal distribution requires positive std, got {self.std}")
+
                 # Calculate lognormal parameters from mean and std
                 variance = self.std ** 2
                 mu = np.log(self.mean ** 2 / np.sqrt(variance + self.mean ** 2))
                 sigma = np.sqrt(np.log(1 + variance / (self.mean ** 2)))
                 return np.random.lognormal(mu, sigma, size)
             else:
-                # Use min and max to estimate parameters
-                mu = np.log(self.mode_val)
-                sigma = (np.log(self.max_val) - np.log(self.min_val)) / 4
+                # Use min, mode, and max to estimate parameters
+                # Ensure all values are positive for logarithm
+                min_val_safe = max(self.min_val, MIN_POSITIVE_VALUE)
+                mode_val_safe = max(self.mode_val, MIN_POSITIVE_VALUE)
+                max_val_safe = max(self.max_val, MIN_POSITIVE_VALUE)
+
+                if min_val_safe >= max_val_safe:
+                    raise ValueError(f"Lognormal distribution requires min_val < max_val, got min={self.min_val}, max={self.max_val}")
+
+                mu = np.log(mode_val_safe)
+                sigma = (np.log(max_val_safe) - np.log(min_val_safe)) / LOGNORMAL_SIGMA_DIVISOR
                 return np.random.lognormal(mu, sigma, size)
-                
+
         elif self.dist_type == 'uniform':
+            if self.min_val >= self.max_val:
+                raise ValueError(f"Uniform distribution requires min_val < max_val, got min={self.min_val}, max={self.max_val}")
             return np.random.uniform(self.min_val, self.max_val, size)
-            
+
         elif self.dist_type == 'triangular':
+            if not (self.min_val <= self.mode_val <= self.max_val):
+                raise ValueError(f"Triangular distribution requires min_val <= mode_val <= max_val, got min={self.min_val}, mode={self.mode_val}, max={self.max_val}")
             return np.random.triangular(self.min_val, self.mode_val, self.max_val, size)
-        
+
         else:
             raise ValueError(f"Unknown distribution type: {self.dist_type}")
 

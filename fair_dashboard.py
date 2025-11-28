@@ -63,14 +63,18 @@ st.markdown("---")
 
 # Sidebar - Scenario Selection
 with st.sidebar:
-    st.image("https://via.placeholder.com/300x80/1f77b4/ffffff?text=BARE+Cybersecurity", use_container_width=True)
+    # Display logo if it exists
+    import os
+    if os.path.exists("bare_logo.png"):
+        st.image("bare_logo.png", width=150)
     st.header("⚙️ Configuration")
     
     # Preset scenarios
     scenario_preset = st.selectbox(
         "📋 Load Preset Scenario",
         ["Custom", "Ransomware Attack", "Data Breach (GDPR)", "Business Email Compromise", 
-         "DDoS Attack", "Insider Threat"],
+         "DDoS Attack", "Insider Threat", "Zero-Day Exploit", "Physical Theft of Device",
+         "Critical System Outage", "Supply Chain Compromise"],
         help="Load pre-configured risk scenarios based on common cybersecurity threats. Select 'Custom' to define your own parameters."
     )
     
@@ -116,6 +120,81 @@ with st.sidebar:
         index=0,
         help="Currency symbol for displaying financial values in reports and visualizations."
     )
+    
+    st.markdown("---")
+    
+    # Risk Appetite / Tolerance Configuration
+    st.subheader("🎚️ Risk Tolerance Settings")
+    
+    # Preset risk appetite profiles
+    risk_profile = st.selectbox(
+        "Risk Appetite Profile",
+        ["Conservative", "Moderate", "Aggressive", "Custom"],
+        index=1,
+        help="Pre-configured risk tolerance levels based on industry best practices. Conservative is typical for financial services, Moderate for most organizations, Aggressive for startups. Select 'Custom' to define your own thresholds."
+    )
+    
+    # Set default thresholds based on profile
+    if risk_profile == "Conservative":
+        default_low = 0.2
+        default_moderate = 0.5
+    elif risk_profile == "Moderate":
+        default_low = 0.5
+        default_moderate = 1.0
+    elif risk_profile == "Aggressive":
+        default_low = 1.0
+        default_moderate = 2.0
+    else:  # Custom
+        default_low = 0.5
+        default_moderate = 1.0
+    
+    # Allow customization
+    col_risk1, col_risk2 = st.columns(2)
+    with col_risk1:
+        low_threshold = st.number_input(
+            "Low Risk Threshold (%)",
+            min_value=0.01,
+            max_value=10.0,
+            value=default_low,
+            step=0.1,
+            disabled=(risk_profile != "Custom"),
+            help="ALE as % of annual revenue below this threshold is considered LOW RISK (acceptable). Typical values: 0.2% (conservative), 0.5% (moderate), 1.0% (aggressive)."
+        )
+    
+    with col_risk2:
+        moderate_threshold = st.number_input(
+            "Moderate Risk Threshold (%)",
+            min_value=0.01,
+            max_value=10.0,
+            value=default_moderate,
+            step=0.1,
+            disabled=(risk_profile != "Custom"),
+            help="ALE as % of annual revenue above this threshold is considered HIGH RISK (requires treatment). Between low and moderate thresholds is MODERATE RISK. Typical values: 0.5% (conservative), 1.0% (moderate), 2.0% (aggressive)."
+        )
+    
+    # Store in session state for use in results
+    st.session_state.risk_thresholds = {
+        'low': low_threshold,
+        'moderate': moderate_threshold,
+        'profile': risk_profile
+    }
+    
+    # Show risk tolerance summary
+    with st.expander("📊 Your Risk Tolerance Summary"):
+        st.markdown(f"""
+        **Profile:** {risk_profile}
+        
+        **Risk Levels (as % of annual revenue):**
+        - 🟢 **Low Risk (Acceptable):** < {low_threshold}%
+        - 🟡 **Moderate Risk:** {low_threshold}% - {moderate_threshold}%
+        - 🔴 **High Risk:** > {moderate_threshold}%
+        
+        **For your organization (Revenue: {currency}{annual_revenue:,}):**
+        - 🟢 Low Risk: < {currency}{annual_revenue * low_threshold / 100:,.0f}
+        - 🟡 Moderate Risk: {currency}{annual_revenue * low_threshold / 100:,.0f} - {currency}{annual_revenue * moderate_threshold / 100:,.0f}
+        - 🔴 High Risk: > {currency}{annual_revenue * moderate_threshold / 100:,.0f}
+        """)
+
 
 # Load preset values
 def load_preset(scenario):
@@ -163,6 +242,34 @@ def load_preset(scenario):
             "primary_min": 15000, "primary_mode": 80000, "primary_max": 400000,
             "secondary_min": 20000, "secondary_mode": 100000, "secondary_max": 600000,
             "secondary_prob": 0.60
+        },
+        "Zero-Day Exploit": {
+            "tef_min": 5, "tef_mode": 20, "tef_max": 75,
+            "vuln_contact": 0.20, "vuln_action": 0.50, "vuln_rate": 0.50,
+            "primary_min": 30000, "primary_mode": 100000, "primary_max": 500000,
+            "secondary_min": 50000, "secondary_mode": 150000, "secondary_max": 800000,
+            "secondary_prob": 0.60
+        },
+        "Physical Theft of Device": {
+            "tef_min": 10, "tef_mode": 50, "tef_max": 200,
+            "vuln_contact": 0.80, "vuln_action": 0.10, "vuln_rate": 0.15,
+            "primary_min": 1000, "primary_mode": 4000, "primary_max": 15000,
+            "secondary_min": 5000, "secondary_mode": 25000, "secondary_max": 150000,
+            "secondary_prob": 0.30
+        },
+        "Critical System Outage": {
+            "tef_min": 1, "tef_mode": 3, "tef_max": 10,
+            "vuln_contact": 1.0, "vuln_action": 1.0, "vuln_rate": 0.80,
+            "primary_min": 15000, "primary_mode": 60000, "primary_max": 300000,
+            "secondary_min": 10000, "secondary_mode": 50000, "secondary_max": 250000,
+            "secondary_prob": 0.50
+        },
+        "Supply Chain Compromise": {
+            "tef_min": 2, "tef_mode": 8, "tef_max": 30,
+            "vuln_contact": 0.70, "vuln_action": 0.20, "vuln_rate": 0.25,
+            "primary_min": 25000, "primary_mode": 120000, "primary_max": 600000,
+            "secondary_min": 50000, "secondary_mode": 200000, "secondary_max": 1000000,
+            "secondary_prob": 0.75
         }
     }
     return presets.get(scenario, {
@@ -282,10 +389,7 @@ with col1:
 
 with col2:
     st.markdown("### 🏢 Internal Factors (Your Organization)")
-    
-    with st.container(border=True):
-        st.markdown("**💰 Primary Loss Magnitude**")
-        st.caption("Direct costs when incident occurs - YOUR organization's costs")
+
     with st.container(border=True):
         st.markdown("**💰 Primary Loss Magnitude**")
         st.caption("Direct costs when incident occurs - YOUR organization's costs")
@@ -357,48 +461,56 @@ with col2:
 st.markdown("---")
 col_button1, col_button2, col_button3 = st.columns([1, 1, 1])
 with col_button2:
-    run_button = st.button("🚀 Run Simulation", type="primary", use_container_width=True)
+    run_button = st.button("🚀 Run Simulation", type="primary")
 
 if run_button:
     with st.spinner('Running Monte Carlo simulation... This may take a few seconds...'):
-        # Create distributions
-        tef = FAIRDistribution(
-            dist_type='pert',
-            min_val=tef_min,
-            mode_val=tef_mode,
-            max_val=tef_max
-        )
-        
-        primary_loss = FAIRDistribution(
-            dist_type='lognormal',
-            min_val=primary_min,
-            mode_val=primary_mode,
-            max_val=primary_max
-        )
-        
-        secondary_loss = FAIRDistribution(
-            dist_type='lognormal',
-            min_val=secondary_min,
-            mode_val=secondary_mode,
-            max_val=secondary_max
-        )
-        
-        # Run simulation
-        sim = FAIRMonteCarloSimulation(n_simulations=n_simulations)
-        stats = sim.run_simulation(
-            tef_dist=tef,
-            vuln_prob=total_vulnerability,
-            primary_loss_dist=primary_loss,
-            secondary_loss_dist=secondary_loss,
-            secondary_loss_prob=secondary_prob
-        )
-        
-        # Store in session state
-        st.session_state.simulation_run = True
-        st.session_state.stats = stats
-        st.session_state.sim = sim
-        
-    st.success("✅ Simulation complete!")
+        try:
+            # Create distributions
+            tef = FAIRDistribution(
+                dist_type='pert',
+                min_val=tef_min,
+                mode_val=tef_mode,
+                max_val=tef_max
+            )
+
+            primary_loss = FAIRDistribution(
+                dist_type='lognormal',
+                min_val=primary_min,
+                mode_val=primary_mode,
+                max_val=primary_max
+            )
+
+            secondary_loss = FAIRDistribution(
+                dist_type='lognormal',
+                min_val=secondary_min,
+                mode_val=secondary_mode,
+                max_val=secondary_max
+            )
+
+            # Run simulation
+            sim = FAIRMonteCarloSimulation(n_simulations=n_simulations)
+            stats = sim.run_simulation(
+                tef_dist=tef,
+                vuln_prob=total_vulnerability,
+                primary_loss_dist=primary_loss,
+                secondary_loss_dist=secondary_loss,
+                secondary_loss_prob=secondary_prob
+            )
+
+            # Store in session state
+            st.session_state.simulation_run = True
+            st.session_state.stats = stats
+            st.session_state.sim = sim
+
+            st.success("✅ Simulation complete!")
+
+        except ValueError as e:
+            st.error(f"❌ **Simulation Error**: {str(e)}")
+            st.info("Please check your input parameters and ensure they are valid.")
+        except Exception as e:
+            st.error(f"❌ **Unexpected Error**: {str(e)}")
+            st.info("An unexpected error occurred. Please try again or contact support.")
 
 # Display results if simulation has been run
 if st.session_state.simulation_run and st.session_state.stats:
@@ -442,15 +554,20 @@ if st.session_state.simulation_run and st.session_state.stats:
             help="Loss Event Frequency (LEF): The expected number of successful loss events per year. This is calculated from Threat Event Frequency multiplied by Vulnerability."
         )
     
-    # Risk appetite indicator
+    # Risk appetite indicator - using configurable thresholds
     ale_pct_revenue = (stats['ale_mean'] / annual_revenue) * 100
     
-    if ale_pct_revenue > 1.0:
-        st.error(f"⚠️ **HIGH RISK**: Mean ALE is {ale_pct_revenue:.2f}% of annual revenue (>1%). Immediate risk treatment recommended.")
-    elif ale_pct_revenue > 0.5:
-        st.warning(f"⚡ **MODERATE RISK**: Mean ALE is {ale_pct_revenue:.2f}% of annual revenue (0.5-1%). Consider cost-effective controls.")
+    # Get thresholds from session state (with defaults if not set)
+    thresholds = st.session_state.get('risk_thresholds', {'low': 0.5, 'moderate': 1.0, 'profile': 'Moderate'})
+    low_threshold = thresholds['low']
+    moderate_threshold = thresholds['moderate']
+    
+    if ale_pct_revenue > moderate_threshold:
+        st.error(f"🔴 **HIGH RISK**: Mean ALE is {ale_pct_revenue:.2f}% of annual revenue (>{moderate_threshold}%). Immediate risk treatment recommended.")
+    elif ale_pct_revenue > low_threshold:
+        st.warning(f"🟡 **MODERATE RISK**: Mean ALE is {ale_pct_revenue:.2f}% of annual revenue ({low_threshold}%-{moderate_threshold}%). Consider cost-effective controls.")
     else:
-        st.success(f"✅ **ACCEPTABLE RISK**: Mean ALE is {ale_pct_revenue:.2f}% of annual revenue (<0.5%). May accept or implement low-cost controls.")
+        st.success(f"🟢 **LOW RISK (ACCEPTABLE)**: Mean ALE is {ale_pct_revenue:.2f}% of annual revenue (<{low_threshold}%). May accept or implement low-cost controls.")
     
     st.markdown("---")
     
@@ -490,15 +607,39 @@ if st.session_state.simulation_run and st.session_state.stats:
             annotation_position="top left"
         )
         
+        # Add risk tolerance threshold lines
+        low_threshold_value = annual_revenue * low_threshold / 100
+        moderate_threshold_value = annual_revenue * moderate_threshold / 100
+        
+        fig_dist.add_vline(
+            x=low_threshold_value,
+            line_dash="dot",
+            line_color="green",
+            annotation_text=f"Low Risk: {currency}{low_threshold_value:,.0f}",
+            annotation_position="bottom left",
+            opacity=0.7
+        )
+        
+        fig_dist.add_vline(
+            x=moderate_threshold_value,
+            line_dash="dot",
+            line_color="red",
+            annotation_text=f"High Risk: {currency}{moderate_threshold_value:,.0f}",
+            annotation_position="bottom right",
+            opacity=0.7
+        )
+        
         fig_dist.update_layout(
-            title="Distribution of Annual Losses",
+            title="Distribution of Annual Losses (with Risk Tolerance Thresholds)",
             xaxis_title=f"Annual Loss ({currency})",
             yaxis_title="Frequency",
             hovermode='x unified',
             height=500
         )
         
-        st.plotly_chart(fig_dist, use_container_width=True)
+        st.plotly_chart(fig_dist)
+        
+        st.caption(f"🟢 Green line: Low risk threshold ({low_threshold}% of revenue) | 🔴 Red line: High risk threshold ({moderate_threshold}% of revenue)")
     
     with tab2:
         # Exceedance Curve
@@ -537,7 +678,7 @@ if st.session_state.simulation_run and st.session_state.stats:
             height=500
         )
         
-        st.plotly_chart(fig_exceed, use_container_width=True)
+        st.plotly_chart(fig_exceed)
         
         st.info("💡 **Interpretation**: This curve shows the probability that annual losses will exceed a given amount. Use the 95th percentile for insurance coverage decisions.")
     
@@ -566,8 +707,8 @@ if st.session_state.simulation_run and st.session_state.stats:
             showlegend=False
         )
         
-        st.plotly_chart(fig_pct, use_container_width=True)
-        
+        st.plotly_chart(fig_pct)
+
         # Percentile table
         st.subheader("📋 Detailed Percentiles")
         pct_table = pd.DataFrame({
@@ -575,7 +716,7 @@ if st.session_state.simulation_run and st.session_state.stats:
             'Annual Loss': [f"{currency}{stats['percentiles'][p]:,.2f}" for p in ['10th', '25th', '50th', '75th', '90th', '95th', '99th']],
             '% of Revenue': [f"{(stats['percentiles'][p]/annual_revenue)*100:.2f}%" for p in ['10th', '25th', '50th', '75th', '90th', '95th', '99th']]
         })
-        st.dataframe(pct_table, use_container_width=True, hide_index=True)
+        st.dataframe(pct_table, hide_index=True)
     
     with tab4:
         # Loss Event Frequency
@@ -607,7 +748,7 @@ if st.session_state.simulation_run and st.session_state.stats:
             height=500
         )
         
-        st.plotly_chart(fig_lef, use_container_width=True)
+        st.plotly_chart(fig_lef)
         
         st.metric(
             "Probability of at least one loss event",

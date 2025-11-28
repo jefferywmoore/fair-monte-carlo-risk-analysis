@@ -1,17 +1,19 @@
 # FAIR Risk Analysis Dashboard - Dependencies
 # Python 3.8+ required
+#
+# Version pinning ensures consistent behavior across environments
+# Last updated: 2024-11-28
 
 # Core Framework
-streamlit>=1.28.0
+streamlit>=1.28.0,<2.0.0
 
 # Data Processing & Analysis
-numpy>=1.24.0
-pandas>=2.0.0
+numpy>=1.24.0,<2.0.0
+pandas>=2.0.0,<3.0.0
 
 # Visualization
-plotly>=5.17.0
+plotly>=5.17.0,<6.0.0
+matplotlib>=3.7.0,<4.0.0
 
-# Statistical Distributions (included in numpy/scipy)
-scipy>=1.11.0
-
-matplotlib>=3.9.4
+# Statistical Distributions
+scipy>=1.11.0,<2.0.0
